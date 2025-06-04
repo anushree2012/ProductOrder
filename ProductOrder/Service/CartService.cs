@@ -4,13 +4,20 @@ namespace ProductOrder.Service;
 
 public class CartService: ICartService
 {
-    public Task AddToCart(Product product, int quantity)
+    private readonly List<CartItem> _cartItems = new();
+    public void AddToCart(Product product, int quantity)
     {
-        throw new NotImplementedException();
+        var itemExist= _cartItems.FirstOrDefault(x => x.Product.ProductId == product.ProductId);
+        if(itemExist == null)
+            _cartItems.Add(new CartItem(product, quantity));
+        else
+        {
+            itemExist.Quantity += quantity;
+        }
     }
 
-    public Task<List<CartItem>> GetCartItems()
+    public List<CartItem> GetCartItems()
     {
-        throw new NotImplementedException();
+        return _cartItems;
     }
 }

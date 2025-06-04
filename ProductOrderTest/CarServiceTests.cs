@@ -18,7 +18,7 @@ public class CarServiceTests
         cartService.AddToCart(product, 1);
         var cartItems= cartService.GetCartItems();
         
-        Assert.Single(cartItems.Result);
-        Assert.Equal(cartItems.Result.Count, 1);
+        Assert.Single(cartItems);
+        Assert.Equal(cartItems.Count, 1);
     }
 }
