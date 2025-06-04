@@ -6,4 +6,6 @@ public interface ICartService
 {
     public void AddToCart(Product product, int quantity);
     public List<CartItem> GetCartItems();
+
+    public Order Checkout();
 }

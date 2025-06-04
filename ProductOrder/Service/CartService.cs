@@ -22,4 +22,9 @@ public class CartService: ICartService
     {
         return _cartItems;
     }
+
+    public Order Checkout()
+    {
+        throw new NotImplementedException();
+    }
 }

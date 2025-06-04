@@ -39,4 +39,22 @@ public class CarServiceTests
         Assert.Single(cartItems);
         Assert.Equal(cartItems.FirstOrDefault()?.Quantity,productQuantity);
     }
+
+    [Fact]
+
+    public void PlaceOrderWithProductQuantity()
+    {
+        var cartService = new CartService();
+        var product = new Product()
+        {
+            Price = new decimal(100.00),
+            Name = "Laptop"
+        };
+        
+        cartService.AddToCart(product, 2);
+        var order= cartService.Checkout();
+        
+        order.Total().Equals(product.Price * 2);
+        Assert.Equal(cartService.GetCartItems().Count,0);
+    }
 }
