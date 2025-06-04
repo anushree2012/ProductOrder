@@ -1,14 +1,23 @@
-﻿using ProductOrder.Entities;
+﻿using Moq;
+using ProductOrder;
+using ProductOrder.Entities;
 using ProductOrder.Service;
 
 namespace ProductOrderTest;
 
 public class CarServiceTests
 {
+    private readonly Mock<IOrderRepository> _mockOrderRepository;
+
+    public CarServiceTests()
+    {
+        _mockOrderRepository= new Mock<IOrderRepository>();
+        _mockOrderRepository.Setup(x=>x.Save(It.IsAny<Order>())).Verifiable();
+    }
     [Fact]
     public void NoProductAddToCartWithQuantityLessThanOrEqualToZero()
     {
-        var cartService = new CartService();
+        var cartService = new CartService(_mockOrderRepository.Object);
         var product = new Product()
         {
             Price = new decimal(100.00),
@@ -26,7 +35,7 @@ public class CarServiceTests
     [InlineData(2)]
     public void ShouldAddProductToCartWithQuantity(int productQuantity)
     {
-        var cartService = new CartService();
+        var cartService = new CartService(_mockOrderRepository.Object);
         var product = new Product()
         {
             Price = new decimal(100.00),
@@ -44,7 +53,7 @@ public class CarServiceTests
 
     public void PlaceOrderWithProductQuantity()
     {
-        var cartService = new CartService();
+        var cartService = new CartService(_mockOrderRepository.Object);
         var product = new Product()
         {
             Price = new decimal(100.00),
@@ -54,7 +63,7 @@ public class CarServiceTests
         cartService.AddToCart(product, 2);
         var order= cartService.Checkout();
         
-        order.Total().Equals(product.Price * 2);
+        Assert.Equal(order.Total, product.Price * 2);
         Assert.Equal(cartService.GetCartItems().Count,0);
     }
 }
