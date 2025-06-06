@@ -1,4 +1,5 @@
 using ProductOrder.Entities;
+using ProductOrder.Repository;
 
 namespace ProductOrder.Service;
 
@@ -31,9 +32,4 @@ public class CartService(IOrderRepository orderRepository) : ICartService
         _cartItems.Clear();
         return order;
     }
-}
-
-public interface IOrderRepository
-{
-    public void Save(Order order);
 }

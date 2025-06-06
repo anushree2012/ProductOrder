@@ -1,7 +1,19 @@
 namespace ProductOrder.Entities;
 
-public class CartItem(Product product, int quantity)
+public class CartItem
 {
-    public Product Product { get; set; } = product;
-    public int Quantity { get; set; } = quantity;
+    public CartItem(Product product, int quantity)
+    {
+        Product = product;
+        Quantity = quantity;
+    }
+    // EF Core needs this
+    private CartItem()
+    {
+        
+    }
+
+    public Guid Id { get; private set; } = Guid.NewGuid();
+    public Product Product { get; private set; }
+    public int Quantity { get; set; }
 }
