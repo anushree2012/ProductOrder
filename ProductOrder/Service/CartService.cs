@@ -1,35 +1,45 @@
+using Microsoft.Extensions.Caching.Memory;
 using ProductOrder.Entities;
 using ProductOrder.Repository;
 
 namespace ProductOrder.Service;
 
-public class CartService(IOrderRepository orderRepository) : ICartService
+public class CartService(IOrderRepository orderRepository, IMemoryCache memoryCache) : ICartService
 {
-    private readonly List<CartItem> _cartItems = [];
+    private const string CartKey = "cart_items";
 
     public void AddToCart(Product product, int quantity)
     {
+        var cart = GetCartInternal();
         if (quantity <= 0)
             return;
-        var itemExist= _cartItems.FirstOrDefault(x => x.Product.ProductId == product.ProductId);
+        var itemExist= cart.FirstOrDefault(x => x.Product.ProductId == product.ProductId);
         if(itemExist == null)
-            _cartItems.Add(new CartItem(product, quantity));
+            cart.Add(new CartItem(product, quantity));
         else
         {
             itemExist.Quantity += quantity;
         }
+        memoryCache.Set(CartKey, cart);
     }
 
     public List<CartItem> GetCartItems()
     {
-        return _cartItems;
+        return GetCartInternal();
     }
 
     public Order Checkout()
     {
-        var order = new Order([.._cartItems]);
+        var cart = GetCartInternal();
+        var order = new Order(cart);
         orderRepository.Save(order);
-        _cartItems.Clear();
+        memoryCache.Remove(CartKey);
         return order;
+    }
+    private List<CartItem> GetCartInternal()
+    {
+        return (memoryCache.TryGetValue(CartKey, out List<CartItem>? cart)
+            ? cart
+            : new List<CartItem>())!;
     }
 }

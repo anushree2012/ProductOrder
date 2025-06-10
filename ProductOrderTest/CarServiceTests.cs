@@ -1,5 +1,5 @@
-﻿using Moq;
-using ProductOrder;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Moq;
 using ProductOrder.Entities;
 using ProductOrder.Repository;
 using ProductOrder.Service;
@@ -8,25 +8,29 @@ namespace ProductOrderTest;
 
 public class CarServiceTests
 {
-    private readonly Mock<IOrderRepository> _mockOrderRepository;
+    private readonly CartService _cartService;
 
     public CarServiceTests()
     {
-        _mockOrderRepository= new Mock<IOrderRepository>();
-        _mockOrderRepository.Setup(x=>x.Save(It.IsAny<Order>())).Verifiable();
+        Mock<IOrderRepository> mockOrderRepository = new();
+        Mock<IMemoryCache> memoryCache = new();
+        var order = new Order(new List<CartItem>());
+        mockOrderRepository.Setup(x=>x.Save(It.IsAny<Order>())).Verifiable();
+        memoryCache.Setup(x=>x.Set(It.IsAny<string>(), It.IsAny<MemoryCacheEntryOptions>())).Verifiable();
+        memoryCache.Setup(x=>x.Remove(It.IsAny<string>())).Verifiable();
+        _cartService = new CartService(mockOrderRepository.Object, memoryCache.Object);
     }
     [Fact]
     public void NoProductAddToCartWithQuantityLessThanOrEqualToZero()
     {
-        var cartService = new CartService(_mockOrderRepository.Object);
         var product = new Product()
         {
             Price = new decimal(100.00),
             Name = "Laptop"
         };
         
-        cartService.AddToCart(product, 0);
-        var cartItems= cartService.GetCartItems();
+        _cartService.AddToCart(product, 0);
+        var cartItems= _cartService.GetCartItems();
         
         Assert.Empty(cartItems);
     }
@@ -36,15 +40,14 @@ public class CarServiceTests
     [InlineData(2)]
     public void ShouldAddProductToCartWithQuantity(int productQuantity)
     {
-        var cartService = new CartService(_mockOrderRepository.Object);
         var product = new Product()
         {
             Price = new decimal(100.00),
             Name = "Laptop"
         };
         
-        cartService.AddToCart(product, productQuantity);
-        var cartItems= cartService.GetCartItems();
+        _cartService.AddToCart(product, productQuantity);
+        var cartItems= _cartService.GetCartItems();
         
         Assert.Single(cartItems);
         Assert.Equal(cartItems.FirstOrDefault()?.Quantity,productQuantity);
@@ -54,17 +57,16 @@ public class CarServiceTests
 
     public void PlaceOrderWithProductQuantity()
     {
-        var cartService = new CartService(_mockOrderRepository.Object);
         var product = new Product()
         {
             Price = new decimal(100.00),
             Name = "Laptop"
         };
         
-        cartService.AddToCart(product, 2);
-        var order= cartService.Checkout();
+        _cartService.AddToCart(product, 2);
+        var order= _cartService.Checkout();
         
         Assert.Equal(order.Total, product.Price * 2);
-        Assert.Equal(cartService.GetCartItems().Count,0);
+        Assert.Equal(_cartService.GetCartItems().Count,0);
     }
 }

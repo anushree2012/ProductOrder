@@ -27,6 +27,5 @@ public class OrderRepositoryTests
         Assert.NotNull(result);
         Assert.Equal(order.OrderId, result.OrderId);
         Assert.Equal(order.Total, result.Total);
-
     }
 }
