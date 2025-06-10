@@ -13,12 +13,9 @@ public class CarServiceTests
     public CarServiceTests()
     {
         Mock<IOrderRepository> mockOrderRepository = new();
-        Mock<IMemoryCache> memoryCache = new();
-        var order = new Order(new List<CartItem>());
+        var memoryCache = new MemoryCache(new MemoryCacheOptions());
         mockOrderRepository.Setup(x=>x.Save(It.IsAny<Order>())).Verifiable();
-        memoryCache.Setup(x=>x.Set(It.IsAny<string>(), It.IsAny<MemoryCacheEntryOptions>())).Verifiable();
-        memoryCache.Setup(x=>x.Remove(It.IsAny<string>())).Verifiable();
-        _cartService = new CartService(mockOrderRepository.Object, memoryCache.Object);
+        _cartService = new CartService(mockOrderRepository.Object, memoryCache);
     }
     [Fact]
     public void NoProductAddToCartWithQuantityLessThanOrEqualToZero()
